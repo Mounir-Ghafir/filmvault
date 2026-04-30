@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Modal from './components/Modal';
 import MovieForm from './components/MovieForm';
+import MovieCard from './components/MovieCard';
 
 function App() {
   const [movies, setMovies] = useState(() => {
@@ -20,54 +21,24 @@ function App() {
     return INITIAL_MOVIES;
   });
 
-  const [isModalOpen , setIsModalOpen] = useEffect(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('filmvault_movies', JSON.stringify(movies));
   }, [movies]);
 
   const topRatedMovie = useMemo(() => {
+    if (!movies || movies.length === 0) return null;
     return [...movies].sort((a, b) => b.rating - a.rating)[0];
   }, [movies]);
 
   const top3Movies = useMemo(() => {
+    if (!movies || movies.length === 0) return [];
     return [...movies].sort((a, b) => b.rating - a.rating).slice(0, 3);
   }, [movies]);
 
   const handleAddMovie = (newMovie) => {
     setMovies(prev => [newMovie, ...prev]);
-import { X } from 'lucide-react';
-import { useEffect } from 'react';
-
-function Modal({ isOpen, onClose, title, children }) {
-  useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{title}</h2>
-          <button className="modal-close" onClick={onClose}>
-            <X size={24} />
-          </button>
-        </div>
-        <div className="modal-body">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default Modal;
     setIsModalOpen(false);
   };
 
@@ -83,17 +54,7 @@ export default Modal;
             <h2 className="section-title">Top Rated Movies</h2>
             <div className="movies-grid">
               {top3Movies.map(movie => (
-                <div key={movie.id} style={{ 
-                  height: '400px', 
-                  background: 'var(--bg-card)', 
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid var(--border)'
-                }}>
-                  {movie.title} (Top 3)
-                </div>
+                <MovieCard key={`top-${movie.id}`} movie={movie} />
               ))}
             </div>
           </section>
@@ -102,17 +63,7 @@ export default Modal;
             <h2 className="section-title">All Movies</h2>
             <div className="movies-grid">
               {movies.map(movie => (
-                <div key={movie.id} style={{ 
-                  height: '400px', 
-                  background: 'var(--bg-card)', 
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1px solid var(--border)'
-                }}>
-                  {movie.title}
-                </div>
+                <MovieCard key={movie.id} movie={movie} />
               ))}
             </div>
           </section>
