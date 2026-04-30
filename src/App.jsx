@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import './App.css';
 import { INITIAL_MOVIES } from './constants/initialData';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
 
 function App() {
-
   const [movies, setMovies] = useState(() => {
     const savedMovies = localStorage.getItem('filmvault_movies');
     if (savedMovies) {
       try {
         return JSON.parse(savedMovies);
       } catch (error) {
-        console.error("Failed to parse movies from localStorage", error);
+        console.error("Failed to parse movies", error);
         return INITIAL_MOVIES;
       }
     }
@@ -20,29 +22,63 @@ function App() {
     localStorage.setItem('filmvault_movies', JSON.stringify(movies));
   }, [movies]);
 
+  const topRatedMovie = useMemo(() => {
+    return [...movies].sort((a, b) => b.rating - a.rating)[0];
+  }, [movies]);
+
+  const top3Movies = useMemo(() => {
+    return [...movies].sort((a, b) => b.rating - a.rating).slice(0, 3);
+  }, [movies]);
+
+  const handleAddClick = () => {
+    console.log("Add Movie Clicked");
+  };
+
   return (
     <div className="app">
-
-      <header style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1 style={{ color: 'var(--accent)', fontSize: '3rem' }}>FilmVault</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          State Persistence Active: {movies.length} movies loaded.
-        </p>
-      </header>
+      <Navbar onAddClick={handleAddClick} />
       
-      <main style={{ padding: '0 2rem' }}>
-        <h2 style={{ marginBottom: '1rem' }}>Debug View: Data Schema</h2>
-        <div style={{ 
-          background: 'var(--bg-secondary)', 
-          padding: '1rem', 
-          borderRadius: '8px',
-          border: '1px solid var(--border)',
-          maxHeight: '400px',
-          overflow: 'auto'
-        }}>
-          <pre style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            {JSON.stringify(movies, null, 2)}
-          </pre>
+      <main>
+        <Hero movie={topRatedMovie} />
+
+        <div className="container">
+          <section>
+            <h2 className="section-title">Top Rated Movies</h2>
+            <div className="movies-grid">
+              {top3Movies.map(movie => (
+                <div key={movie.id} style={{ 
+                  height: '400px', 
+                  background: 'var(--bg-card)', 
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid var(--border)'
+                }}>
+                  {movie.title} (Top 3)
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="section-title">All Movies</h2>
+            <div className="movies-grid">
+              {movies.map(movie => (
+                <div key={movie.id} style={{ 
+                  height: '400px', 
+                  background: 'var(--bg-card)', 
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid var(--border)'
+                }}>
+                  {movie.title}
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </main>
     </div>
