@@ -3,6 +3,8 @@ import './App.css';
 import { INITIAL_MOVIES } from './constants/initialData';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import Modal from './components/Modal';
+import MovieForm from './components/MovieForm';
 
 function App() {
   const [movies, setMovies] = useState(() => {
@@ -18,6 +20,8 @@ function App() {
     return INITIAL_MOVIES;
   });
 
+  const [isModalOpen , setIsModalOpen] = useEffect(false)
+
   useEffect(() => {
     localStorage.setItem('filmvault_movies', JSON.stringify(movies));
   }, [movies]);
@@ -30,13 +34,46 @@ function App() {
     return [...movies].sort((a, b) => b.rating - a.rating).slice(0, 3);
   }, [movies]);
 
-  const handleAddClick = () => {
-    console.log("Add Movie Clicked");
+  const handleAddMovie = (newMovie) => {
+    setMovies(prev => [newMovie, ...prev]);
+import { X } from 'lucide-react';
+import { useEffect } from 'react';
+
+function Modal({ isOpen, onClose, title, children }) {
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{title}</h2>
+          <button className="modal-close" onClick={onClose}>
+            <X size={24} />
+          </button>
+        </div>
+        <div className="modal-body">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Modal;
+    setIsModalOpen(false);
   };
 
   return (
     <div className="app">
-      <Navbar onAddClick={handleAddClick} />
+      <Navbar onAddClick={() => setIsModalOpen(true)} />
       
       <main>
         <Hero movie={topRatedMovie} />
@@ -81,6 +118,17 @@ function App() {
           </section>
         </div>
       </main>
+
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Add New Movie"
+      >
+        <MovieForm 
+          onSubmit={handleAddMovie} 
+          onCancel={() => setIsModalOpen(false)} 
+        />
+      </Modal>
     </div>
   );
 }
